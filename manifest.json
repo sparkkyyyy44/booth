@@ -1,0 +1,9 @@
+{
+  "name": "Booth",
+  "short_name": "Booth",
+  "start_url": "./",
+  "display": "fullscreen",
+  "background_color": "#14121a",
+  "theme_color": "#14121a",
+  "icons": [{ "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }]
+}
