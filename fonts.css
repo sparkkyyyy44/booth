@@ -1,0 +1,91 @@
+@font-face{font-family:'Great Vibes';src:url(fonts/great-vibes-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Dancing Script';src:url(fonts/dancing-script-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Dancing Script';src:url(fonts/dancing-script-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Pacifico';src:url(fonts/pacifico-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Satisfy';src:url(fonts/satisfy-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Sacramento';src:url(fonts/sacramento-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Allura';src:url(fonts/allura-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Alex Brush';src:url(fonts/alex-brush-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Parisienne';src:url(fonts/parisienne-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Pinyon Script';src:url(fonts/pinyon-script-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Tangerine';src:url(fonts/tangerine-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Tangerine';src:url(fonts/tangerine-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Kaushan Script';src:url(fonts/kaushan-script-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Yellowtail';src:url(fonts/yellowtail-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Cookie';src:url(fonts/cookie-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Lobster';src:url(fonts/lobster-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Mrs Saint Delafield';src:url(fonts/mrs-saint-delafield-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Monsieur La Doulaise';src:url(fonts/monsieur-la-doulaise-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Playfair Display';src:url(fonts/playfair-display-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Playfair Display';src:url(fonts/playfair-display-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'DM Serif Display';src:url(fonts/dm-serif-display-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Cormorant Garamond';src:url(fonts/cormorant-garamond-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Cormorant Garamond';src:url(fonts/cormorant-garamond-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Lora';src:url(fonts/lora-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Lora';src:url(fonts/lora-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Cinzel';src:url(fonts/cinzel-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Cinzel';src:url(fonts/cinzel-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Cinzel Decorative';src:url(fonts/cinzel-decorative-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Cinzel Decorative';src:url(fonts/cinzel-decorative-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Bodoni Moda';src:url(fonts/bodoni-moda-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Bodoni Moda';src:url(fonts/bodoni-moda-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Abril Fatface';src:url(fonts/abril-fatface-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Yeseva One';src:url(fonts/yeseva-one-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Italiana';src:url(fonts/italiana-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Marcellus';src:url(fonts/marcellus-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Fraunces';src:url(fonts/fraunces-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Fraunces';src:url(fonts/fraunces-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Libre Baskerville';src:url(fonts/libre-baskerville-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Libre Baskerville';src:url(fonts/libre-baskerville-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Montserrat';src:url(fonts/montserrat-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Montserrat';src:url(fonts/montserrat-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Poppins';src:url(fonts/poppins-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Poppins';src:url(fonts/poppins-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Raleway';src:url(fonts/raleway-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Raleway';src:url(fonts/raleway-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Josefin Sans';src:url(fonts/josefin-sans-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Josefin Sans';src:url(fonts/josefin-sans-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Quicksand';src:url(fonts/quicksand-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Quicksand';src:url(fonts/quicksand-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Nunito';src:url(fonts/nunito-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Nunito';src:url(fonts/nunito-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'League Spartan';src:url(fonts/league-spartan-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'League Spartan';src:url(fonts/league-spartan-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Space Grotesk';src:url(fonts/space-grotesk-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Space Grotesk';src:url(fonts/space-grotesk-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'DM Sans';src:url(fonts/dm-sans-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'DM Sans';src:url(fonts/dm-sans-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Syne';src:url(fonts/syne-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Syne';src:url(fonts/syne-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Inter';src:url(fonts/inter-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Inter';src:url(fonts/inter-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Bebas Neue';src:url(fonts/bebas-neue-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Anton';src:url(fonts/anton-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Oswald';src:url(fonts/oswald-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Oswald';src:url(fonts/oswald-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Archivo Black';src:url(fonts/archivo-black-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Righteous';src:url(fonts/righteous-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Bungee';src:url(fonts/bungee-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Monoton';src:url(fonts/monoton-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Lilita One';src:url(fonts/lilita-one-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Luckiest Guy';src:url(fonts/luckiest-guy-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Bangers';src:url(fonts/bangers-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Fredoka';src:url(fonts/fredoka-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Fredoka';src:url(fonts/fredoka-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Chewy';src:url(fonts/chewy-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Mountains of Christmas';src:url(fonts/mountains-of-christmas-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Mountains of Christmas';src:url(fonts/mountains-of-christmas-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Berkshire Swash';src:url(fonts/berkshire-swash-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Caveat';src:url(fonts/caveat-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Caveat';src:url(fonts/caveat-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Amatic SC';src:url(fonts/amatic-sc-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Amatic SC';src:url(fonts/amatic-sc-latin-700-normal.woff2) format('woff2');font-weight:700;font-style:normal;font-display:block}
+@font-face{font-family:'Shadows Into Light';src:url(fonts/shadows-into-light-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Permanent Marker';src:url(fonts/permanent-marker-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Indie Flower';src:url(fonts/indie-flower-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Gloria Hallelujah';src:url(fonts/gloria-hallelujah-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Homemade Apple';src:url(fonts/homemade-apple-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Rock Salt';src:url(fonts/rock-salt-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Patrick Hand';src:url(fonts/patrick-hand-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Special Elite';src:url(fonts/special-elite-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
+@font-face{font-family:'Press Start 2P';src:url(fonts/press-start-2p-latin-400-normal.woff2) format('woff2');font-weight:400;font-style:normal;font-display:block}
