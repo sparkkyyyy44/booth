@@ -595,7 +595,7 @@ async function renderHome() {
   const mb = $('#myDesigns');
   mb.innerHTML = `<button class="card newcard" id="newMine"><b>＋</b>Create my own design<span style="font-size:12px;font-weight:500">Upload a frame, add text anywhere</span></button>` +
     S.mine.map(d => cardHTML(d.id, esc(d.name), LAYOUTS[d.layout].label,
-      `<button class="btn sm primary" data-a="use">Use</button><button class="btn sm" data-a="edit">Edit</button><button class="btn sm ghost" data-a="dup">Copy</button><button class="btn sm ghost" data-a="del">Delete</button>`)).join('');
+      `<button class="btn sm primary" data-a="use">Use</button><button class="btn sm" data-a="edit">Edit</button><button class="btn sm ghost" data-a="dup">Copy</button><button class="btn sm ghost" data-a="del">Delete</button>${S.creator ? '<button class="btn sm" data-a="toCreator" style="width:100%;margin-top:4px">🎨 Copy to Creator mode</button>' : ''}`)).join('');
   $('#newMine').onclick = () => newDesignDialog(true);
   for (const card of $$('.card[data-id]', mb)) {
     const d = S.mine.find(x => x.id === card.dataset.id);
@@ -605,6 +605,11 @@ async function renderHome() {
       if (a === 'edit') openEditor('design', d);
       if (a === 'use') { const ev = newEventFrom(clone(d), d.name); await saveEvent(ev); openEditor('event', ev); }
       if (a === 'dup') { const c = clone(d); c.id = 'm-' + uid(); c.name += ' (copy)'; c.created = Date.now(); await DB.put('designs', c); renderHome(); }
+      if (a === 'toCreator' && S.creator) {
+        const c = clone(d); c.id = 'd-' + uid(); c.mine = false; c.created = Date.now(); delete c.updated;
+        await DB.put('designs', c); await loadDrafts();
+        toast(`Copied "${d.name}" to Creator mode as a draft ✓`, 3500);
+      }
       if (a === 'del' && confirm(`Delete your design "${d.name}"? Events using it keep a saved copy.`)) { await DB.del('designs', d.id); renderHome(); }
     };
   }

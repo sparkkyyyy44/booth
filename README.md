@@ -42,6 +42,8 @@ It works like Canva:
 4. **Publish designs → Make library.json**, then upload `library.json` to your GitHub repository. Everyone gets the designs within a minute or two.
 5. Tap **Lock** when you're done.
 
+To turn one of your own designs into a ready-made one, unlock Creator mode, go to the home screen, and tap **🎨 Copy to Creator mode** on the design's card. It shows up as a draft that you can publish.
+
 ## 5. Everyone else
 
 - **＋ New event:** pick a design and name the event. Tap the highlighted words on the design to type your own.
