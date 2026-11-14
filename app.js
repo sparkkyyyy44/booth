@@ -59,6 +59,8 @@ const LAYOUTS = {
   strip3: { label: '1×3 strip', size: '2×6 in', W: 600, H: 1800, cols: 1, rows: 3, frac: .17 },
   strip2: { label: '1×2 strip', size: '2×6 in', W: 600, H: 1800, cols: 1, rows: 2, frac: .2 },
   grid4: { label: '2×2 grid', size: '4×6 in', W: 1200, H: 1800, cols: 2, rows: 2, frac: .13 },
+  two46: { label: '4×6 · 2 stacked', size: '4×6 in', W: 1200, H: 1800, cols: 1, rows: 2, frac: .14 },
+  two64: { label: '6×4 · 2 side by side', size: '6×4 in', W: 1800, H: 1200, cols: 2, rows: 1, frac: .16 },
   single: { label: 'Single photo', size: '6×4 in', W: 1800, H: 1200, cols: 1, rows: 1, frac: .16 },
   double4: { label: '2 strips on 4×6', size: '4×6 in, cut in half', W: 600, H: 1800, cols: 1, rows: 4, frac: .15, double: true },
 };
@@ -208,9 +210,9 @@ function newDesign(layout = 'strip4', mine = false) {
     id: (mine ? 'm-' : 'd-') + uid(), mine, name: 'Untitled design', layout, created: Date.now(), allowText: false,
     bgStyle: 'solid', c1: '#ffffff', c2: '#e9e6ef', pattern: 'none', pColor: '#000000', pAmt: .2,
     bgImage: null, overlayImage: null,
-    textPos: 'bottom', textSize: 1, title: '', subtitle: '', showDate: false, dateText: '',
+    ...spaceDefaults(layout), customSlots: null, title: '', subtitle: '', showDate: false, dateText: '',
     font: 'sans', textColor: '#222222', titleScale: 1,
-    padding: 30, gap: 18, radius: 0, borderW: 0, borderColor: '#ffffff', filter: 'none',
+    gap: 18, radius: 0, borderW: 0, borderColor: '#ffffff', filter: 'none',
     items: [],
   };
 }
@@ -224,6 +226,7 @@ function newTextItem(style, x = .5, y = .5) {
   }, style);
 }
 function migrate(d) {
+  normSpace(d);
   if (!d || d.items) return d;
   d.items = [];
   for (const s of d.stickers || []) d.items.push({ id: 'i-' + uid(), type: 'sticker', e: s.e, x: s.x, y: s.y, size: s.size, rot: s.rot || 0, opacity: 1 });
@@ -250,19 +253,36 @@ function compose(ev) {
 }
 
 /* ---------------- rendering ---------------- */
+const DPI = 300;
+/* default spacing per layout, in inches: side margins + blank bands for text & designs */
+function spaceDefaults(k) {
+  const L = LAYOUTS[k] || LAYOUTS.strip4;
+  if (L.W > L.H) return { margin: .3, spTop: .5, spBottom: 0, spLeft: 0, spRight: 1.5 };   // landscape: text band on the right
+  if (L.W === 600) return { margin: .2, spTop: .5, spBottom: 1.5, spLeft: 0, spRight: 0 }; // 2×6 strips
+  return { margin: .3, spTop: .5, spBottom: 1.5, spLeft: 0, spRight: 0 };                  // 4×6 portrait
+}
+/* convert older designs (padding/textPos) to the inch-based spacing without changing how they look */
+function normSpace(d) {
+  if (!d || d.margin != null || !d.layout) return d;
+  const L = LAYOUTS[d.layout] || LAYOUTS.strip4, u = Math.min(L.W, L.H) / 600;
+  const th = d.textPos === 'none' ? 0 : L.H * L.frac * (d.textSize || 1) / DPI;
+  Object.assign(d, { margin: (d.padding ?? 30) * u / DPI, spTop: d.textPos === 'top' ? th : 0, spBottom: d.textPos === 'top' || d.textPos === 'none' ? 0 : th, spLeft: 0, spRight: 0 });
+  return d;
+}
 function geom(ev) {
   const L = LAYOUTS[ev.layout] || LAYOUTS.strip4;
-  const { W, H, cols, rows } = L, u = Math.min(W, H) / 600;
-  const pad = ev.padding * u, gap = ev.gap * u;
-  const th = ev.textPos === 'none' ? 0 : H * L.frac * ev.textSize;
-  const top = ev.textPos === 'top';
-  const area = { x: pad, y: pad + (top ? th : 0), w: W - 2 * pad, h: H - 2 * pad - th };
-  const text = top ? { x: pad, y: pad, w: W - 2 * pad, h: th } : { x: pad, y: H - pad - th, w: W - 2 * pad, h: th };
-  const sw = (area.w - (cols - 1) * gap) / cols, sh = (area.h - (rows - 1) * gap) / rows;
-  const slots = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
-    slots.push({ x: area.x + c * (sw + gap), y: area.y + r * (sh + gap), w: sw, h: sh });
-  return { W, H, u, slots, text, L };
+  const { W, H, cols, rows } = L, u = Math.min(W, H) / 600, n = cols * rows;
+  const sp = ev.margin != null ? ev : { ...spaceDefaults(ev.layout), ...ev };
+  const m = sp.margin * DPI, T = sp.spTop * DPI, B = sp.spBottom * DPI, Lf = sp.spLeft * DPI, R = sp.spRight * DPI, gap = (ev.gap ?? 18) * u;
+  const area = { x: m + Lf, y: m + T, w: Math.max(40, W - 2 * m - Lf - R), h: Math.max(40, H - 2 * m - T - B) };
+  const bands = { top: { x: m, y: m, w: W - 2 * m, h: T }, bottom: { x: m, y: H - m - B, w: W - 2 * m, h: B }, left: { x: m, y: m, w: Lf, h: H - 2 * m }, right: { x: W - m - R, y: m, w: R, h: H - 2 * m } };
+  const text = [bands.bottom, bands.right, bands.top, bands.left].reduce((a, b) => b.w * b.h > a.w * a.h ? b : a, { x: 0, y: 0, w: 0, h: 0 });
+  let slots = [];
+  {
+    const sw = (area.w - (cols - 1) * gap) / cols, sh = (area.h - (rows - 1) * gap) / rows;
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) slots.push({ x: area.x + c * (sw + gap), y: area.y + r * (sh + gap), w: sw, h: sh });
+  }
+  return { W, H, u, slots, text, bands, L };
 }
 function shotsFor(ev) { const L = LAYOUTS[ev.layout]; return L.cols * L.rows; }
 
@@ -328,10 +348,19 @@ function applyFilter(ctx, w, h, f) {
   ctx.putImageData(img, 0, 0);
 }
 const imgCache = new Map();
+const imgDims = new Map();
+/* where the uploaded frame image sits: fit (cover = fill page, contain = whole image, stretch), size and centre */
+function frameRect(ev, iw, ih, W, H) {
+  const fit = ev.bgFit || 'cover', s = ev.bgScale ?? 1; let w, h;
+  if (fit === 'stretch') { w = W; h = H; }
+  else { const k = fit === 'contain' ? Math.min(W / iw, H / ih) : Math.max(W / iw, H / ih); w = iw * k; h = ih * k; }
+  w *= s; h *= s;
+  return { x: (ev.bgX ?? .5) * W - w / 2, y: (ev.bgY ?? .5) * H - h / 2, w, h };
+}
 function loadImg(src) {
   if (!src) return Promise.resolve(null);
   if (imgCache.has(src)) return imgCache.get(src);
-  const p = new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+  const p = new Promise(res => { const i = new Image(); i.onload = () => { imgDims.set(src, { w: i.naturalWidth, h: i.naturalHeight }); res(i); }; i.onerror = () => res(null); i.src = src; });
   imgCache.set(src, p); return p;
 }
 function drawCover(ctx, src, sw0, sh0, x, y, w, h) {
@@ -418,11 +447,11 @@ async function drawBase(ctx, ev, g, photos) {
   ctx.fillRect(0, 0, W, H);
   drawPattern(ctx, ev, W, H, u);
   const bg = await loadImg(ev.bgImage);
-  if (bg) drawCover(ctx, bg, bg.naturalWidth, bg.naturalHeight, 0, 0, W, H);
+  if (bg) { const r = frameRect(ev, bg.naturalWidth, bg.naturalHeight, W, H); ctx.drawImage(bg, r.x, r.y, r.w, r.h); }
   // legacy title area lines (older designs only)
-  if (ev.textPos !== 'none' && g.text.h > 0 && (ev.title || ev.subtitle || (ev.showDate && ev.dateText))) {
+  if (g.text.h > 0 && (ev.title || ev.subtitle || (ev.showDate && ev.dateText))) {
     const f = SYS_FONTS[ev.font] || SYS_FONTS.sans, t = { x: g.text.x, y: g.text.y + g.text.h * .07, w: g.text.w, h: g.text.h * .86 }, lines = [];
-    const base = 62 * u * (ev.titleScale || 1) * Math.min(1.4, ev.textSize);
+    const base = 62 * u * (ev.titleScale || 1) * Math.min(1.4, ev.textSize || 1);
     if (ev.title) lines.push({ s: ev.title, size: base, w: f.w, font: f.css });
     if (ev.subtitle) lines.push({ s: ev.subtitle, size: base * .48, w: 600, font: SYS_FONTS.sans.css });
     if (ev.showDate && ev.dateText) lines.push({ s: ev.dateText, size: base * .36, w: 500, font: SYS_FONTS.sans.css });
@@ -609,7 +638,7 @@ function newDesignDialog(mine = false) {
   let layout = 'strip4';
   const box = openModal(`<h2>${mine ? 'Create my own design' : 'New ready-made design'}</h2>
     <label>Design name</label><input id="dName" placeholder="e.g. Red Christmas Strip">
-    <label>Layout</label><div class="tiles" id="dLay" style="grid-template-columns:repeat(6,1fr)">${Object.entries(LAYOUTS).map(([k, l]) => `<button class="tile ${k === layout ? 'on' : ''}" data-k="${k}">${layoutSVG(k)}<span>${l.label}</span></button>`).join('')}</div>
+    <label>Layout</label><div class="tiles" id="dLay" style="grid-template-columns:repeat(4,1fr)">${Object.entries(LAYOUTS).map(([k, l]) => `<button class="tile ${k === layout ? 'on' : ''}" data-k="${k}">${layoutSVG(k)}<span>${l.label}</span></button>`).join('')}</div>
     <div class="row" style="justify-content:flex-end;margin-top:18px"><button class="btn ghost" id="dX">Cancel</button><button class="btn primary" id="dGo">Create design</button></div>`);
   $('#dLay', box).onclick = e => { const t = e.target.closest('[data-k]'); if (!t) return; layout = t.dataset.k; $$('#dLay .tile').forEach(c => c.classList.toggle('on', c === t)); };
   $('#dX', box).onclick = closeModal;
@@ -619,7 +648,7 @@ function newDesignDialog(mine = false) {
   };
 }
 function layoutSVG(k, h = 64) {
-  const L = LAYOUTS[k], g = geom({ layout: k, padding: 30, gap: 18, textPos: 'bottom', textSize: 1 });
+  const L = LAYOUTS[k], g = geom({ layout: k, gap: 18, ...spaceDefaults(k) });
   const W = L.double ? L.W * 2 : L.W, sc = h / L.H, w = W * sc;
   const one = (ox) => g.slots.map(s => `<rect x="${ox + s.x * sc}" y="${s.y * sc}" width="${s.w * sc}" height="${s.h * sc}" rx="1" fill="#b9b3c9"/>`).join('');
   return `<svg viewBox="0 0 ${w} ${h}" style="height:${h}px;width:auto;max-width:100%"><rect width="${w}" height="${h}" fill="#fff" stroke="#d3d6de"/>${one(0)}${L.double ? one(L.W * sc) : ''}</svg>`;
@@ -661,13 +690,28 @@ const EVENT_TABS = [['words', 'Words'], ['booth', 'Booth']];
 const E = { sel: null, editing: null, hist: [], hi: -1, tab: null, sub: null, scale: 1, hits: [], guides: [], fontCat: 'All', fontQ: '', colorTarget: null, uploadKey: 'bgImage' };
 const isDesign = () => S.mode === 'design';
 function edView() { return isDesign() ? S.ed : compose(S.ed); }
-function selItem() { return E.sel ? (isDesign() ? S.ed.items : edView().items).find(i => i.id === E.sel) : null; }
+function selItem() {
+  if (!E.sel) return null;
+  if (E.sel.startsWith('slot-')) return isDesign() ? slotObj(+E.sel.slice(5)) : null;
+  return (isDesign() ? S.ed.items : edView().items).find(i => i.id === E.sel);
+}
+/* photo slots: computed from the layout until someone moves one, then saved as customSlots */
+function slotObj(i) {
+  if (S.ed.customSlots) return S.ed.customSlots[i] || null;
+  const g = geom(S.ed), s = g.slots[i]; if (!s) return null;
+  return { id: 'slot-' + i, type: 'slot', x: (s.x + s.w / 2) / g.W, y: (s.y + s.h / 2) / g.H, w: s.w / g.W, h: s.h / g.H };
+}
+function ensureCustomSlots() {
+  if (S.ed.customSlots) return;
+  const g = geom(S.ed);
+  S.ed.customSlots = g.slots.map((s, i) => ({ id: 'slot-' + i, type: 'slot', x: (s.x + s.w / 2) / g.W, y: (s.y + s.h / 2) / g.H, w: s.w / g.W, h: s.h / g.H }));
+}
 function L_() { return LAYOUTS[edView().layout]; }
 
 function openEditor(mode, obj) {
   if (mode === 'design' && !S.creator && !obj.mine) return;
   S.mode = mode; S.ed = clone(obj); if (mode === 'design') migrate(S.ed);
-  S.dirty = false; Object.assign(E, { sel: null, editing: null, hist: [], hi: -1, sub: null, guides: [] });
+  S.dirty = false; Object.assign(E, { sel: null, editing: null, hist: [], hi: -1, sub: null, guides: [], frame: false });
   pushHist();
   $('#edName').value = S.ed.name;
   $('#edMode').textContent = mode === 'event' ? 'Event' : S.ed.mine ? 'My design' : 'Ready-made';
@@ -701,7 +745,8 @@ function redraw() {
     const pc = $('#previewCanvas');
     if (pc.width !== c.width || pc.height !== c.height) { pc.width = c.width; pc.height = c.height; fitCanvas(); }
     pc.getContext('2d').drawImage(c, 0, 0);
-    E.hits = o.hits; drawOverlay();
+    E.hits = o.hits;
+    drawOverlay();
   });
 }
 function fitCanvas() {
@@ -725,13 +770,16 @@ function drawOverlay() {
   if (!isDesign()) {
     for (const it of edView().items) if (it.type === 'text' && it.editable && it.id !== E.sel) { const h = hitBox(it.id); if (h) html += box(h, 'hover', '<div class="ctag">Tap to edit</div>'); }
   }
-  const it = selItem(), h = it && hitBox(it.id);
+  const fr = E.frame && frameHit();
+  if (fr) html += box(fr, 'frame', ['nw', 'ne', 'sw', 'se'].map(k => `<div class="hdl ${k}" data-h="${k}"></div>`).join('') + '<div class="ctag">Frame image: drag to move</div>');
+  const it = !E.frame && selItem(), h = it && hitBox(it.id);
   if (h) {
     let hd = '';
     if (isDesign() && E.editing !== it.id) {
       hd = ['nw', 'ne', 'sw', 'se'].map(k => `<div class="hdl ${k}" data-h="${k}"></div>`).join('');
-      if (it.type === 'shape') hd += ['n', 's', 'e', 'w'].map(k => `<div class="hdl ${k}" data-h="${k}"></div>`).join('');
-      hd += `<div class="hdl rot" data-h="rot">${ICON.rot}</div>`;
+      if (it.type === 'shape' || it.type === 'slot') hd += ['n', 's', 'e', 'w'].map(k => `<div class="hdl ${k}" data-h="${k}"></div>`).join('');
+      if (it.type === 'slot') hd += `<div class="ctag">Photo ${+it.id.slice(5) + 1}</div>`;
+      else hd += `<div class="hdl rot" data-h="rot">${ICON.rot}</div>`;
     }
     html += box(h, E.editing === it.id ? 'edit' : '', hd);
   }
@@ -740,6 +788,12 @@ function drawOverlay() {
   if (!boxes) { boxes = document.createElement('div'); boxes.className = 'boxes'; ovl.prepend(boxes); }
   boxes.innerHTML = html; // the inline text editor is a sibling, so typing keeps focus
 }
+function frameHit() {
+  const ev = S.ed, d = ev && ev.bgImage && imgDims.get(ev.bgImage); if (!d) return null;
+  const L = L_(), r = frameRect(ev, d.w, d.h, L.W, L.H);
+  return { x: (r.x + r.w / 2) / L.W, y: (r.y + r.h / 2) / L.H, w: r.w / L.W, h: r.h / L.H, rot: 0 };
+}
+function setFrameMode(on) { E.frame = !!on && !!(S.ed && S.ed.bgImage); if (E.frame) E.sel = null; renderCtx(); drawOverlay(); if (E.tab === 'frame') renderDrawer(); }
 function normPt(e) {
   const r = $('#cbox').getBoundingClientRect(), L = L_();
   let x = (e.clientX - r.left) / (L.W * E.scale); const y = (e.clientY - r.top) / (L.H * E.scale);
@@ -762,8 +816,17 @@ $('#ovl').addEventListener('pointerdown', e => {
   if (e.target.closest('.inl')) return;
   if (E.editing) finishEdit();
   closePop();
-  const p = normPt(e), it = selItem(), hd = e.target.closest('.hdl');
+  const p = normPt(e), hd = e.target.closest('.hdl');
+  if (E.frame && isDesign()) {
+    const L = L_(), f = frameHit(); if (!f) return;
+    const cx = f.x * L.W * E.scale, cy = f.y * L.H * E.scale;
+    drag = hd ? { type: 'fscale', s0: S.ed.bgScale ?? 1, cx, cy, d0: Math.hypot(p.px - cx, p.py - cy) || 1, changed: false }
+              : { type: 'fmove', x0: S.ed.bgX ?? .5, y0: S.ed.bgY ?? .5, p0: p, changed: false };
+    $('#ovl').setPointerCapture(e.pointerId); return;
+  }
+  let it = selItem();
   if (hd && it && isDesign()) {
+    if (it.type === 'slot') { ensureCustomSlots(); it = selItem(); }
     const L = L_(), cx = it.x * L.W * E.scale, cy = it.y * L.H * E.scale;
     drag = { type: hd.dataset.h, it, o: clone(it), cx, cy, d0: Math.hypot(p.px - cx, p.py - cy) || 1, changed: false };
     $('#ovl').setPointerCapture(e.pointerId); return;
@@ -778,11 +841,22 @@ $('#ovl').addEventListener('pointerdown', e => {
 });
 $('#ovl').addEventListener('pointermove', e => {
   if (!drag) return;
-  const p = normPt(e), it = drag.it, L = L_();
+  const p = normPt(e), L = L_(); let it = drag.it;
+  if (drag.type === 'fmove') {
+    let nx = drag.x0 + p.x - drag.p0.x, ny = drag.y0 + p.y - drag.p0.y; E.guides = [];
+    const th = 6 / (E.scale * L.W), tv = 6 / (E.scale * L.H);
+    if (Math.abs(nx - .5) < th) { nx = .5; E.guides.push({ t: 'v', v: .5 }); }
+    if (Math.abs(ny - .5) < tv) { ny = .5; E.guides.push({ t: 'h', v: .5 }); }
+    S.ed.bgX = nx; S.ed.bgY = ny; drag.changed = true; redraw(); return;
+  }
+  if (drag.type === 'fscale') {
+    S.ed.bgScale = Math.max(.1, Math.min(5, drag.s0 * Math.hypot(p.px - drag.cx, p.py - drag.cy) / drag.d0)); drag.changed = true; redraw(); return;
+  }
   if (drag.type === 'move') {
     let nx = drag.x0 + p.x - drag.p0.x, ny = drag.y0 + p.y - drag.p0.y;
     if (!drag.changed && Math.hypot((p.x - drag.p0.x) * L.W, (p.y - drag.p0.y) * L.H) * E.scale < 3) return;
     drag.changed = true; E.guides = [];
+    if (it.type === 'slot' && !S.ed.customSlots) { ensureCustomSlots(); it = drag.it = selItem(); }
     const th = 6 / (E.scale * L.W), tv = 6 / (E.scale * L.H);
     if (Math.abs(nx - .5) < th) { nx = .5; E.guides.push({ t: 'v', v: .5 }); }
     if (Math.abs(ny - .5) < tv) { ny = .5; E.guides.push({ t: 'h', v: .5 }); }
@@ -794,7 +868,7 @@ $('#ovl').addEventListener('pointermove', e => {
     it.rot = Math.round(a); drag.changed = true;
   } else if (['nw', 'ne', 'sw', 'se'].includes(drag.type)) {
     const k = Math.max(.05, Math.hypot(p.px - drag.cx, p.py - drag.cy) / drag.d0);
-    if (it.type === 'shape') { it.w = drag.o.w * k; it.h = drag.o.h * k; } else it.size = Math.max(.008, drag.o.size * k);
+    if (it.type === 'shape' || it.type === 'slot') { it.w = drag.o.w * k; it.h = drag.o.h * k; } else it.size = Math.max(.008, drag.o.size * k);
     drag.changed = true;
   } else { // edge handles (shapes): resize one axis in the shape's own direction
     const a = -(it.rot || 0) * Math.PI / 180, dx = p.px - drag.cx, dy = p.py - drag.cy;
@@ -808,7 +882,7 @@ $('#ovl').addEventListener('pointermove', e => {
 function endDrag() {
   if (!drag) return;
   const d = drag; drag = null; E.guides = [];
-  if (d.changed) { commit(); renderCtx(); }
+  if (d.changed) { commit(); renderCtx(); if (E.frame && E.tab === 'frame') renderDrawer(); }
   else if (d.type === 'move' && d.was && d.it.type === 'text') setTimeout(() => startEdit(d.it.id), 0);
   drawOverlay();
 }
@@ -858,9 +932,10 @@ function openTab(k) { E.tab = k; E.sub = null; $('#drawer').classList.remove('cl
 function openSub(k) { E.sub = k; $('#drawer').classList.remove('closed'); renderDrawer(); setTimeout(fitCanvas, 230); }
 function closeDrawer() { E.tab = null; E.sub = null; $('#drawer').classList.add('closed'); $$('#rail button').forEach(b => b.classList.remove('on')); setTimeout(fitCanvas, 230); }
 function sl(attr, key, label, min, max, step, val, fmt = v => v) {
-  return `<label>${label}</label><div class="slider"><input type="range" ${attr}="${key}" min="${min}" max="${max}" step="${step}" value="${val}" data-fmt="${fmt === pct ? 'pct' : ''}"><output>${fmt(val)}</output></div>`;
+  return `<label>${label}</label><div class="slider"><input type="range" ${attr}="${key}" min="${min}" max="${max}" step="${step}" value="${val}" data-fmt="${fmt === pct ? 'pct' : fmt === inch ? 'in' : ''}"><output>${fmt(val)}</output></div>`;
 }
 const pct = v => Math.round(v * 100) + '%';
+const inch = v => (+v).toFixed(v < 1 && String(v).length > 3 ? 2 : 1) + ' in';
 function dotBtn(target, color, label) { return `<button class="btn sm" data-act="color" data-v="${target}"><span class="dot" style="background:${color}"></span>${label}</button>`; }
 function chipRow(key, map, cur) { return `<div class="chips">${Object.entries(map).map(([k, l]) => `<button class="chip ${String(k) === String(cur) ? 'on' : ''}" data-act="set" data-k="${key}" data-v="${k}">${esc(l)}</button>`).join('')}</div>`; }
 function renderDrawer() {
@@ -874,16 +949,24 @@ function tabPanel(k) {
   if (k === 'layout') {
     return `<h3>Layout</h3><div class="hint">How many photos, and the print size.</div>
       <div class="tiles">${Object.entries(LAYOUTS).map(([k, l]) => `<button class="tile ${k === ev.layout ? 'on' : ''}" data-act="set" data-k="layout" data-v="${k}">${layoutSVG(k, 70)}<span>${l.label}</span></button>`).join('')}</div>
-      <div class="dsec"><div class="lbl" style="margin-top:4px">Blank space for your text</div>${chipRow('textPos', { none: 'None', top: 'Top', bottom: 'Bottom' }, ev.textPos)}
-        ${ev.textPos !== 'none' ? sl('data-k', 'textSize', 'Space size', .5, 2.2, .05, ev.textSize, pct) : ''}
-        <div class="hint">Keeps an empty band so your text doesn't cover the photos.</div></div>
-      <div class="dsec">${sl('data-k', 'padding', 'Outer margin', 0, 80, 1, ev.padding)}${sl('data-k', 'gap', 'Space between photos', 0, 60, 1, ev.gap)}</div>`;
+      <div class="dsec"><div class="lbl" style="margin-top:4px">Space for text &amp; designs</div>
+        <div class="hint" style="margin-top:0">Blank bands around the photos for your messages and frame art. Sizes are in inches on the print.</div>
+        ${sl('data-k', 'spTop', 'Top', 0, 3, .1, ev.spTop, inch)}${sl('data-k', 'spBottom', 'Bottom', 0, 3, .1, ev.spBottom, inch)}
+        ${sl('data-k', 'spLeft', 'Left', 0, 3, .1, ev.spLeft, inch)}${sl('data-k', 'spRight', 'Right', 0, 3, .1, ev.spRight, inch)}</div>
+      <div class="dsec">${sl('data-k', 'margin', 'Edge margin (all sides)', 0, .8, .05, ev.margin, inch)}${sl('data-k', 'gap', 'Space between photos', 0, 60, 1, ev.gap)}
+        <button class="bigbtn soft" style="margin-top:12px" data-act="resetSpace">Reset spacing for this layout</button></div>`;
   }
   if (k === 'frame') {
     const g = geom(ev);
     return `<h3>Frame image</h3><div class="hint">Upload a frame you made in Canva (or any image). Photos sit on top of it.</div>
       <div class="drop" style="margin-top:12px">${ev.bgImage ? `<img src="${ev.bgImage}">` : '<div style="font-size:30px">🖼️</div><div>No frame yet</div>'}
         <div class="row" style="justify-content:center;margin-top:10px"><button class="btn sm primary" data-act="upload" data-v="bgImage">${ev.bgImage ? 'Replace frame' : 'Upload frame'}</button>${ev.bgImage ? '<button class="btn sm danger" data-act="clear" data-v="bgImage">Remove</button>' : ''}</div></div>
+      ${ev.bgImage ? `<div class="dsec"><h3 style="font-size:14px">Position the frame</h3>
+        <div class="hint" style="margin-top:0">If the photos cover part of your design, move or shrink the frame, or fit the whole image.</div>
+        <button class="bigbtn" style="margin-top:10px" data-act="${E.frame ? 'frameDone' : 'frameMode'}">${E.frame ? '✓ Done adjusting' : '✥ Move & resize on the design'}</button>
+        <div class="lbl">Fit</div><div class="chips">${[['cover', 'Fill page'], ['contain', 'Fit whole image'], ['stretch', 'Stretch']].map(([k, l]) => `<button class="chip ${(ev.bgFit || 'cover') === k ? 'on' : ''}" data-act="frameFit" data-v="${k}">${l}</button>`).join('')}</div>
+        ${sl('data-k', 'bgScale', 'Size', .1, 3, .01, ev.bgScale ?? 1, pct)}
+        <button class="bigbtn soft" style="margin-top:10px" data-act="frameReset">Reset frame position</button></div>` : ''}
       <div class="dsec"><h3 style="font-size:14px">Size for Canva</h3>
         <div class="kv"><span>Custom size</span><b>${g.W} × ${g.H} px</b></div>
         ${g.slots.map((s, i) => `<div class="kv"><span>Photo ${i + 1}</span><b>${Math.round(s.w)}×${Math.round(s.h)} at x ${Math.round(s.x)}, y ${Math.round(s.y)}</b></div>`).join('')}
@@ -1034,9 +1117,16 @@ function renderCtx() {
   const bar = $('#ctxbar'); if (!S.ed) return;
   const it = selItem(); let h = '';
   if (!isDesign()) h = `<span class="ctx-note">${it ? '✏️ Type your words. Tap outside when done.' : 'Tap a highlighted text on the design to change the words.'}</span>`;
+  else if (it && it.type === 'slot') h = `<span class="ctx-note">📷 Photo ${+it.id.slice(5) + 1}: drag to move it, pull a corner or edge to resize</span><div class="sep"></div><button class="tb" data-act="resetSlots">Reset photo positions</button>`;
+  else if (E.frame) {
+    const f = S.ed.bgFit || 'cover';
+    h = `<span class="ctx-note">Drag the frame to move it · pull a corner to resize</span><div class="sep"></div>
+      ${[['cover', 'Fill page'], ['contain', 'Fit whole image'], ['stretch', 'Stretch']].map(([k, l]) => `<button class="tb ${f === k ? 'on' : ''}" data-act="frameFit" data-v="${k}">${l}</button>`).join('')}
+      <div class="sep"></div><button class="tb" data-act="frameReset">Reset</button><button class="btn sm primary" data-act="frameDone" style="margin-left:6px">Done</button>`;
+  }
   else if (!it) h = `<span class="ctx-note">Tap anything on the design to edit it</span><div class="sep"></div>
       <button class="tb" data-act="openTab" data-v="text">${ICON.text}Text</button><button class="tb" data-act="openTab" data-v="elements">${ICON.elements}Elements</button>
-      <button class="tb" data-act="openTab" data-v="frame">${ICON.frame}Frame</button><button class="tb" data-act="color" data-v="bg1"><span class="dot" style="background:${S.ed.c1}"></span></button>`;
+      <button class="tb" data-act="${S.ed.bgImage ? 'frameMode' : 'openTab'}" data-v="frame">${ICON.frame}${S.ed.bgImage ? 'Adjust frame' : 'Frame'}</button><button class="tb" data-act="color" data-v="bg1"><span class="dot" style="background:${S.ed.c1}"></span></button>`;
   else {
     const m = Math.min(L_().W, L_().H), common = `<div class="sep"></div><button class="tb" data-act="pop" data-v="opacity" title="Transparency">${ICON.opacity}</button><button class="tb" data-act="sub" data-v="position" title="Position">${ICON.layers}Position</button><div class="sep"></div><button class="tb" data-act="dup" title="Duplicate (⌘D)">${ICON.dup}</button><button class="tb" data-act="del" title="Delete">${ICON.del}</button>`;
     if (it.type === 'text') {
@@ -1083,13 +1173,20 @@ function act(a, v, el) {
   switch (a) {
     case 'set': {
       let val = v; if (['countdown', 'autoReturn'].includes(el.dataset.k)) val = +v;
-      ev[el.dataset.k] = val; commit(); renderDrawer(); redraw(); if (el.dataset.k === 'layout') setTimeout(fitCanvas, 30); break;
+      ev[el.dataset.k] = val; if (el.dataset.k === 'layout' && isDesign()) { Object.assign(ev, spaceDefaults(val)); ev.customSlots = null; E.sel = null; renderCtx(); }
+      commit(); renderDrawer(); redraw(); if (el.dataset.k === 'layout') setTimeout(fitCanvas, 30); break;
     }
     case 'openTab': openTab(v); break;
+    case 'frameMode': setFrameMode(true); break;
+    case 'frameDone': setFrameMode(false); break;
+    case 'frameFit': ev.bgFit = v; ev.bgScale = 1; ev.bgX = .5; ev.bgY = .5; commit(); redraw(); renderCtx(); if (E.tab === 'frame') renderDrawer(); break;
+    case 'frameReset': Object.assign(ev, { bgFit: 'cover', bgScale: 1, bgX: .5, bgY: .5 }); commit(); redraw(); renderCtx(); if (E.tab === 'frame') renderDrawer(); break;
+    case 'resetSpace': Object.assign(ev, spaceDefaults(ev.layout)); commit(); renderDrawer(); redraw(); break;
+    case 'resetSlots': ev.customSlots = null; if (E.sel && E.sel.startsWith('slot-')) E.sel = null; commit(); renderDrawer(); renderCtx(); redraw(); break;
     case 'sub': openSub(v); break;
     case 'subBack': E.sub = null; renderDrawer(); break;
     case 'upload': E.uploadKey = v; $('#imgFile').click(); break;
-    case 'clear': ev[v] = null; commit(); renderDrawer(); redraw(); break;
+    case 'clear': ev[v] = null; if (v === 'bgImage') E.frame = false; commit(); renderDrawer(); renderCtx(); redraw(); break;
     case 'guide': downloadGuide(); break;
     case 'addText': { const c = centerOfTextSpace(); addItem(newTextItem({ ...TEXT_STYLES[v] }, c.x, c.y)); break; }
     case 'addCombo': { const c = centerOfTextSpace(); addItem(newTextItem({ ...COMBOS[+v] }, c.x, c.y)); break; }
@@ -1131,8 +1228,8 @@ function act(a, v, el) {
       if (v === 'top') it.y = h.h / 2 + my; if (v === 'bottom') it.y = 1 - h.h / 2 - my; if (v === 'vcenter') it.y = .5;
       commit(); redraw();
     } break;
-    case 'dup': if (it) { const c = clone(it); c.id = 'i-' + uid(); c.x = Math.min(1, c.x + .04); c.y = Math.min(1, c.y + .02); addItem(c); } break;
-    case 'del': if (it) { ev.items.splice(ev.items.indexOf(it), 1); E.sel = null; commit(); redraw(); renderCtx(); if (E.sub) { E.sub = null; renderDrawer(); } } break;
+    case 'dup': if (it && it.type !== 'slot') { const c = clone(it); c.id = 'i-' + uid(); c.x = Math.min(1, c.x + .04); c.y = Math.min(1, c.y + .02); addItem(c); } break;
+    case 'del': if (it && it.type !== 'slot') { ev.items.splice(ev.items.indexOf(it), 1); E.sel = null; commit(); redraw(); renderCtx(); if (E.sub) { E.sub = null; renderDrawer(); } } break;
     case 'pop': if (it) {
       let html = '';
       if (v === 'opacity') html = sl('data-ik', 'opacity', 'Transparency', .05, 1, .01, it.opacity ?? 1, pct);
@@ -1151,7 +1248,7 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const t = e.target; if (!(t.closest('#editor') || t.closest('#pop')) || !S.ed) return;
   const out = t.nextElementSibling && t.nextElementSibling.tagName === 'OUTPUT' ? t.nextElementSibling : null;
-  const fmt = v => t.dataset.fmt === 'pct' ? pct(v) : t.dataset.ik === 'rot' ? v + '°' : t.dataset.ik === 'lineH' ? (+v).toFixed(2) : v;
+  const fmt = v => t.dataset.fmt === 'pct' ? pct(v) : t.dataset.fmt === 'in' ? inch(v) : t.dataset.ik === 'rot' ? v + '°' : t.dataset.ik === 'lineH' ? (+v).toFixed(2) : v;
   if (t.dataset.k) { const v = t.type === 'checkbox' ? t.checked : t.type === 'range' ? +t.value : t.value; S.ed[t.dataset.k] = v; if (out) out.textContent = fmt(v); redraw(); softCommit(); }
   else if (t.dataset.ik) { const it = selItem(); if (!it) return; it[t.dataset.ik] = +t.value; if (out) out.textContent = fmt(+t.value); redraw(); softCommit(); }
   else if (t.dataset.tx) { S.ed.textEdits = S.ed.textEdits || {}; S.ed.textEdits[t.dataset.tx] = t.value; redraw(); softCommit(); }
@@ -1164,8 +1261,10 @@ document.addEventListener('keydown', e => {
   const a = document.activeElement, typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(a.tagName) || a.isContentEditable, mod = e.metaKey || e.ctrlKey;
   if (mod && e.key.toLowerCase() === 'z' && !typing) { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
   if (typing || !isDesign()) return;
-  const it = selItem(); if (!it) return;
+  if (E.frame) { if (e.key === 'Escape' || e.key === 'Enter') setFrameMode(false); return; }
+  let it = selItem(); if (!it) return;
   const L = L_(), n = e.shiftKey ? 10 : 1;
+  if (it.type === 'slot') { if (e.key === 'Escape') { E.sel = null; renderCtx(); drawOverlay(); return; } if (!e.key.startsWith('Arrow')) return; ensureCustomSlots(); it = selItem(); }
   if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); act('del'); }
   else if (mod && e.key.toLowerCase() === 'd') { e.preventDefault(); act('dup'); }
   else if (e.key === 'Escape') { E.sel = null; renderCtx(); drawOverlay(); }
@@ -1181,7 +1280,7 @@ $('#imgFile').addEventListener('change', async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f || !isDesign()) return;
   const key = E.uploadKey;
   const url = await shrinkImage(f, 2400, key === 'bgImage' ? 'image/jpeg' : 'image/png');
-  S.ed[key] = url; commit(); renderDrawer(); redraw();
+  S.ed[key] = url; if (key === 'bgImage') Object.assign(S.ed, { bgFit: 'cover', bgScale: 1, bgX: .5, bgY: .5 }); commit(); renderDrawer(); redraw();
   const g = geom(S.ed), img = await loadImg(url);
   if (img && key === 'bgImage' && Math.abs(img.naturalWidth / img.naturalHeight - g.W / g.H) > .03)
     toast(`Heads up: your image isn't ${g.W}×${g.H}, so it will be cropped to fit.`, 4500);
@@ -1209,8 +1308,9 @@ async function downloadGuide() {
     ctx.font = `500 ${Math.min(s.w, s.h) * .07}px sans-serif`;
     ctx.fillText(`${Math.round(s.w)}×${Math.round(s.h)} px`, s.x + s.w / 2, s.y + s.h / 2 + Math.min(s.w, s.h) * .1);
   });
-  if (g.text.h) { ctx.strokeStyle = '#c0bcc8'; ctx.setLineDash([12, 10]); ctx.lineWidth = 3; ctx.strokeRect(g.text.x, g.text.y, g.text.w, g.text.h);
-    ctx.fillStyle = '#9a96a3'; ctx.font = `600 ${g.u * 24}px sans-serif`; ctx.fillText('space for text', g.W / 2, g.text.y + g.text.h / 2); }
+  for (const b of Object.values(g.bands)) if (b.w > 20 && b.h > 20) {
+    ctx.strokeStyle = '#c0bcc8'; ctx.setLineDash([12, 10]); ctx.lineWidth = 3; ctx.strokeRect(b.x, b.y, b.w, b.h);
+    ctx.fillStyle = '#9a96a3'; ctx.font = `600 ${g.u * 22}px sans-serif`; ctx.fillText('space for text & designs', b.x + b.w / 2, b.y + b.h / 2, b.w * .9); }
   const blob = await toBlob(c, .95);
   shareOrDownload([new File([blob], `canva-guide-${S.ed.layout}-${g.W}x${g.H}.jpg`, { type: 'image/jpeg' })]);
 }

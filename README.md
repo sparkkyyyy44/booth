@@ -30,7 +30,8 @@ It works like Canva:
 - **Effects:** Shadow, Lift, Hollow, Outline, Glow and Neon, each with its own color and size controls.
 - **Elements:** shapes and stickers.
 - **Frame:** upload a frame you made in Canva. The panel shows the exact Canva size and photo positions, and **Download Canva guide** gives you a template image.
-- **Layout → Blank space for your text:** keeps an empty band at the top or bottom so text doesn't cover the photos.
+- **Adjust frame:** after uploading, tap **Move & resize on the design** (or **Adjust frame** in the top toolbar). Drag the frame to move it, pull a corner to resize it, or choose **Fill page / Fit whole image / Stretch**. Tap **Done** when finished.
+- **Layout → Space for text & designs:** blank bands (in inches) at the top, bottom, left or right for your messages and frame art, plus an edge margin. By default, strips and 4×6 prints get 0.5 in at the top and 1.5 in at the bottom, and landscape prints get 1.5 in on the right.
 - **Undo/redo** buttons are at the top. On a laptop you can also use ⌘Z, ⌘D (duplicate), Delete, and the arrow keys to nudge.
 
 ## 4. Creator mode (only you): ready-made designs
@@ -66,6 +67,8 @@ It works like Canva:
 |---|---|
 | 1×4, 1×3, 1×2 strip (2×6 in) | 600 × 1800 px |
 | 2×2 grid (4×6 in) | 1200 × 1800 px |
+| 4×6 · 2 stacked (4×6 in) | 1200 × 1800 px |
+| 6×4 · 2 side by side (6×4 in) | 1800 × 1200 px |
 | Single photo (6×4 in) | 1800 × 1200 px |
 
 Fonts are from Google Fonts (SIL Open Font License), so they're free to use.
